@@ -13,11 +13,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+/// <summary>
+/// Provide Operation for the calculator
+/// </summary>
 namespace Calculator
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for calculator
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -35,6 +37,7 @@ namespace Calculator
         protected double currentValue;
         protected double displayValue;
         protected double operatingValue;
+        protected double decimalPointer;
 
         public MainWindow()
         {
@@ -43,6 +46,7 @@ namespace Calculator
             currentValue = 0;
             operatingValue = 0;
             displayValue = 0;
+            decimalPointer = 1;
         }
 
         #region Process Value
@@ -94,26 +98,14 @@ namespace Calculator
         {
             processValue(0);
         }
-        protected void processValue(int number)
-        {
-            if (currentMode == OperatingMode.Normal && !decimalMode)
-            {
-                currentValue *= 10;
-                currentValue += number;
-                displayValue = currentValue;
-                Output.Text = displayValue.ToString();
-            }
-            else if (currentMode != OperatingMode.Normal && !decimalMode)
-            {
-                operatingValue *= 10;
-                operatingValue += number;
-                displayValue = operatingValue;
-                Output.Text = displayValue.ToString();
-            }
-        }
         #endregion
 
         #region Number Operations
+        /// <summary>
+        /// Set the display value to it's reciprocal
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Reciprocal_Click(object sender, RoutedEventArgs e)
         {
             if (currentMode == OperatingMode.Normal)
@@ -129,6 +121,12 @@ namespace Calculator
                 Output.Text = displayValue.ToString();
             }
         }
+
+        /// <summary>
+        /// Square the display value
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Square_Click(object sender, RoutedEventArgs e)
         {
             if (currentMode == OperatingMode.Normal)
@@ -144,6 +142,12 @@ namespace Calculator
                 Output.Text = displayValue.ToString();
             }
         }
+
+        /// <summary>
+        /// Square Root the current value
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Square_Root_Click(object sender, RoutedEventArgs e)
         {
             if (currentMode == OperatingMode.Normal)
@@ -226,9 +230,18 @@ namespace Calculator
                 displayValue = currentValue;
                 Output.Text = displayValue.ToString();
             }
+
+            decimalMode = false;
+            decimalPointer = 1;
         }
         #endregion
 
+        #region Number Processing
+        /// <summary>
+        /// Switch the sign of the current display value
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Inverse_Click(object sender, RoutedEventArgs e)
         {
             if (currentMode == OperatingMode.Normal)
@@ -259,21 +272,114 @@ namespace Calculator
                 displayValue = currentValue;
                 Output.Text = displayValue.ToString();
             }
-            if (currentMode != OperatingMode.Normal && !decimalMode)
+            else if (currentMode != OperatingMode.Normal && !decimalMode)
             {
                 operatingValue /= 10;
                 operatingValue = (int)operatingValue;
                 displayValue = operatingValue;
                 Output.Text = displayValue.ToString();
             }
+            else if (currentMode == OperatingMode.Normal && decimalMode)
+            {
+                decimalPointer *= 10;
+                double temp = 1 / decimalPointer;
+                currentValue = (int)(temp * currentValue);
+                currentValue /= temp;
+                displayValue = currentValue;
+                Output.Text = displayValue.ToString();
+
+                if (decimalPointer == 1)
+                {
+                    decimalMode = false;
+                }
+            }
+            else
+            {
+                decimalPointer *= 10;
+                double temp = 1 / decimalPointer;
+                operatingValue = (int)(temp * operatingValue);
+                operatingValue /= temp;
+                displayValue = operatingValue;
+                Output.Text = displayValue.ToString();
+
+                if (decimalPointer == 1)
+                {
+                    decimalMode = false;
+                }
+            }
         }
 
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            displayValue = 0;
+            currentValue = 0;
+            operatingValue = 0;
+            decimalMode = false;
+            currentMode = OperatingMode.Normal;
+            Output.Text = displayValue.ToString();
+        }
+        private void Clear_entry_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentMode == OperatingMode.Normal)
+            {
+                currentValue = 0;
+                displayValue = currentValue;
+                Output.Text = displayValue.ToString();
+                decimalMode = false;
+            }
+            if (currentMode != OperatingMode.Normal && !decimalMode)
+            {
+                operatingValue = 0;
+                displayValue = operatingValue;
+                Output.Text = displayValue.ToString();
+                decimalMode = false;
+            }
+        }
+
+        /// <summary>
+        /// Process the new entry
+        /// </summary>
+        /// <param name="number">The new entry value</param>
+        protected void processValue(int number)
+        {
+            if (currentMode == OperatingMode.Normal && !decimalMode)
+            {
+                currentValue *= 10;
+                currentValue += number;
+                displayValue = currentValue;
+                Output.Text = displayValue.ToString();
+            }
+            else if (currentMode != OperatingMode.Normal && !decimalMode)
+            {
+                operatingValue *= 10;
+                operatingValue += number;
+                displayValue = operatingValue;
+                Output.Text = displayValue.ToString();
+            }
+            else if (currentMode == OperatingMode.Normal && decimalMode)
+            {
+                decimalPointer /= 10;
+                currentValue += decimalPointer * number;
+                displayValue = currentValue;
+                Output.Text = displayValue.ToString();
+            }
+            else
+            {
+                decimalPointer /= 10;
+                operatingValue += decimalPointer * number;
+                displayValue = operatingValue;
+                Output.Text = displayValue.ToString();
+            }
+        }
 
         private void Decimal_Click(object sender, RoutedEventArgs e)
         {
-
+            if (!decimalMode)
+            {
+                decimalMode = true;
+                decimalPointer = 1;
+            }
         }
-
-
+        #endregion
     }
 }
